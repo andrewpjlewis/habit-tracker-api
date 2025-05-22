@@ -22,10 +22,6 @@ const habitSchema = new mongoose.Schema({
     enum: ['daily', 'weekly', 'monthly'],
     required: true
   },
-  goal: {
-    type: Number,
-    default: 1
-  },
   startDate: {
     type: Date,
     default: Date.now
