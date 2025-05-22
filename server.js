@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
-const YAML = require('yamljs');
+const path = require('path');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -11,8 +11,8 @@ dotenv.config();
 // Initialize express app
 const app = express();
 
-// Load Swagger YAML documentation
-const swaggerDocument = YAML.load('./docs/swagger.yaml');
+// Load Swagger JSON documentation
+const swaggerDocument = require('./swagger.json'); // Ensure this file exists and is valid
 
 // Middleware
 app.use(cors());
@@ -31,9 +31,13 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-app.use('/auth', require('./routes/auth')); // Local login/register (simple)
-app.use('/api/habits', require('./routes/habitRoutes')); // Habit management
-app.use('/api/logs', require('./routes/logRoutes'));     // Habit logs
+try {
+    app.use('/api/auth', require('./routes/authRoutes'));
+    app.use('/api/habits', require('./routes/habitRoutes'));
+    app.use('/api/logs', require('./routes/logRoutes'));
+} catch (error) {
+    console.error('❌ Route loading error:', error.message);
+}
 
 // Root Route
 app.get('/', (req, res) => {
