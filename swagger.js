@@ -25,6 +25,6 @@ const doc = {
 
 // Output file and files containing routes
 const outputFile = './swagger.json';
-const endpointsFiles = ['./server.js']; // this should import or use all route files
+const endpointsFiles = ['./server.js'];
 
 swaggerAutogen(outputFile, endpointsFiles, doc);

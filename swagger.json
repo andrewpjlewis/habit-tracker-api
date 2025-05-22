@@ -201,25 +201,34 @@
     },
     "/api/habits/": {
       "post": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Create a new habit",
         "description": "",
         "parameters": [
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "title": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "Drink water"
                 },
                 "description": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "Drink 8 cups of water"
                 },
                 "frequency": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "Daily"
                 },
                 "userId": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "user123"
                 }
               }
             }
@@ -227,200 +236,305 @@
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Habit created successfully"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to create habit"
           }
         }
       }
     },
     "/api/habits/all": {
       "get": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Get all habits (optionally filtered by userId)",
         "description": "",
         "parameters": [
           {
             "name": "userId",
             "in": "query",
-            "type": "string"
+            "required": false,
+            "type": "string",
+            "description": "Filter habits by user ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of habits"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to fetch habits"
           }
         }
       }
     },
     "/api/habits/{id}": {
       "get": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Get a single habit by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Habit ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "A habit object"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Habit not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to fetch habit"
           }
         }
       },
       "put": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Update a habit by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Habit ID"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Updated Title"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated description"
+                },
+                "frequency": {
+                  "type": "string",
+                  "example": "weekly"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Habit updated successfully"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Habit not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to update habit"
           }
         }
       },
       "delete": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Delete a habit by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Habit ID"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Habit deleted successfully"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Habit not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to delete habit"
           }
         }
       }
     },
     "/api/logs/": {
       "post": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Create a new log entry for a habit",
         "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "habitId": {
+                  "type": "string",
+                  "example": "60f7f1a2c9e1f829b8a2f9a4"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2025-05-22T00:00:00.000Z"
+                },
+                "notes": {
+                  "type": "string",
+                  "example": "Felt great after completing the habit!"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Log created successfully"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to create log"
           }
         }
       }
     },
     "/api/logs/habit/{habitId}": {
       "get": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Get all logs for a specific habit",
         "description": "",
         "parameters": [
           {
             "name": "habitId",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the habit to fetch logs for"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "List of logs for the habit"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to fetch logs"
           }
         }
       }
     },
     "/api/logs/{id}": {
       "get": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Get a single log entry by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the log entry"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "The requested log entry"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Log not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to fetch log"
           }
         }
       },
       "put": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Update a log entry by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the log entry to update"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "notes": {
+                  "type": "string",
+                  "example": "Updated notes about the habit"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Log updated successfully"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Log not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to update log"
           }
         }
       },
       "delete": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Delete a log entry by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "ID of the log entry to delete"
           }
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Log deleted successfully"
           },
           "404": {
-            "description": "Not Found"
+            "description": "Log not found"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Failed to delete log"
           }
         }
       }
