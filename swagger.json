@@ -72,6 +72,9 @@
           },
           "400": {
             "description": "User already exists"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -109,6 +112,9 @@
           },
           "400": {
             "description": "Invalid email or password"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -238,6 +244,9 @@
           "201": {
             "description": "Habit created successfully"
           },
+          "400": {
+            "description": "Bad Request"
+          },
           "500": {
             "description": "Failed to create habit"
           }
@@ -336,8 +345,11 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Habit updated successfully"
+          "204": {
+            "description": "Habit updated successfully with no content returned"
+          },
+          "400": {
+            "description": "No fields provided for update"
           },
           "404": {
             "description": "Habit not found"
@@ -409,6 +421,9 @@
         "responses": {
           "201": {
             "description": "Log created successfully"
+          },
+          "400": {
+            "description": "Bad Request"
           },
           "500": {
             "description": "Failed to create log"
@@ -494,14 +509,25 @@
                 "notes": {
                   "type": "string",
                   "example": "Updated notes about the habit"
+                },
+                "date": {
+                  "type": "string",
+                  "example": "2025-05-22T00:00:00.000Z"
+                },
+                "habitId": {
+                  "type": "string",
+                  "example": "60f7f1a2c9e1f829b8a2f9a4"
                 }
               }
             }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Log updated successfully"
+          "204": {
+            "description": "Log updated successfully, no content returned"
+          },
+          "400": {
+            "description": "At least one field must be provided for update"
           },
           "404": {
             "description": "Log not found"

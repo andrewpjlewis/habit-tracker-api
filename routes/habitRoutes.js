@@ -20,8 +20,11 @@ router.post('/', async (req, res) => {
   #swagger.responses[201] = { description: 'Habit created successfully' }
   #swagger.responses[500] = { description: 'Failed to create habit' }
   */
+  const { title, description, frequency, userId } = req.body;
+  if (!title || !frequency || !userId) {
+    return res.status(400).json({ message: 'Title, frequency, and userId are required' });
+  }
   try {
-    const { title, description, frequency, userId } = req.body;
     const newHabit = new Habit({ title, description, frequency, userId });
     await newHabit.save();
     res.status(201).json({ message: 'Habit created successfully', habit: newHabit });
@@ -73,9 +76,7 @@ router.get('/:id', async (req, res) => {
   */
   try {
     const habit = await Habit.findById(req.params.id);
-    if (!habit) {
-      return res.status(404).json({ message: 'Habit not found' });
-    }
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
     res.json(habit);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch habit', error: error.message });
@@ -102,16 +103,20 @@ router.put('/:id', async (req, res) => {
         frequency: 'weekly'
       }
     }
-    #swagger.responses[200] = { description: 'Habit updated successfully' }
+    #swagger.responses[204] = { description: 'Habit updated successfully with no content returned' }
     #swagger.responses[404] = { description: 'Habit not found' }
+    #swagger.responses[400] = { description: 'No fields provided for update' }
     #swagger.responses[500] = { description: 'Failed to update habit' }
   */
+  if (!req.body.title && !req.body.description && !req.body.frequency && !req.body.startDate && !req.body.endDate) {
+    return res.status(400).json({ message: 'At least one field must be provided for update' });
+  }
   try {
     const updatedHabit = await Habit.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedHabit) {
-      return res.status(404).json({ message: 'Habit not found' });
-    }
-    res.json({ message: 'Habit updated successfully', habit: updatedHabit });
+    if (!updatedHabit) return res.status(404).json({ message: 'Habit not found' });
+
+    // Send 204 No Content status with no response body
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: 'Failed to update habit', error: error.message });
   }
@@ -134,9 +139,7 @@ router.delete('/:id', async (req, res) => {
   */
   try {
     const deletedHabit = await Habit.findByIdAndDelete(req.params.id);
-    if (!deletedHabit) {
-      return res.status(404).json({ message: 'Habit not found' });
-    }
+    if (!deletedHabit) return res.status(404).json({ message: 'Habit not found' });
     res.json({ message: 'Habit deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete habit', error: error.message });

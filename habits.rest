@@ -16,11 +16,11 @@ GET http://localhost:3000/api/habits/all
 GET http://localhost:3000/api/habits/682f879362a3314a7715edeb
 
 ### Update a habit by ID
-PUT http://localhost:3000/api/habits/682f875c62a3314a7715ede8
+PUT http://localhost:3000/api/habits/682f88b5d334c0a77c81c733
 Content-Type: application/json
 
 {
-  "title": "Morning Walk",
+  "title": "Dinner TIme Walk",
   "description": "Walk instead of jogging",
   "frequency": "daily"
 }

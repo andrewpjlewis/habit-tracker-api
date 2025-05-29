@@ -12,10 +12,10 @@ Content-Type: application/json
 GET http://localhost:3000/api/logs/habit/64f0a7e4b7c123456789abcd
 
 ### Get a single log by ID (replace :id with actual log ID)
-GET http://localhost:3000/api/logs/64f0a8a9b7c123456789abce
+GET http://localhost:3000/api/logs/6838ddbf16c3df358ccb48df
 
 ### Update a log entry by ID (replace :id with actual log ID)
-PUT http://localhost:3000/api/logs/64f0a8a9b7c123456789abce
+PUT http://localhost:3000/api/logs/6838ddbf16c3df358ccb48df
 Content-Type: application/json
 
 {
@@ -24,4 +24,4 @@ Content-Type: application/json
 }
 
 ### Delete a log entry by ID (replace :id with actual log ID)
-DELETE http://localhost:3000/api/logs/64f0a8a9b7c123456789abce
+DELETE http://localhost:3000/api/logs/6838ddbf16c3df358ccb48df

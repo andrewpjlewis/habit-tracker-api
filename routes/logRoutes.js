@@ -19,11 +19,13 @@ router.post('/', async (req, res) => {
     #swagger.responses[201] = { description: 'Log created successfully' }
     #swagger.responses[500] = { description: 'Failed to create log' }
   */
+  const { habitId, date, notes } = req.body;
+  if (!habitId || !date) {
+    return res.status(400).json({ message: 'habitId and date are required' });
+  }
   try {
-    const { habitId, date, notes } = req.body;
     const newLog = new Log({ habitId, date, notes });
     await newLog.save();
-
     res.status(201).json({ message: 'Log created successfully', log: newLog });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create log', error: error.message });
@@ -69,9 +71,7 @@ router.get('/:id', async (req, res) => {
   */
   try {
     const log = await Log.findById(req.params.id);
-    if (!log) {
-      return res.status(404).json({ message: 'Log not found' });
-    }
+    if (!log) return res.status(404).json({ message: 'Log not found' });
     res.json(log);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch log', error: error.message });
@@ -93,19 +93,24 @@ router.put('/:id', async (req, res) => {
       in: 'body',
       required: true,
       schema: {
-        notes: 'Updated notes about the habit'
+        notes: 'Updated notes about the habit',
+        date: '2025-05-22T00:00:00.000Z',
+        habitId: '60f7f1a2c9e1f829b8a2f9a4'
       }
     }
-    #swagger.responses[200] = { description: 'Log updated successfully' }
+    #swagger.responses[204] = { description: 'Log updated successfully, no content returned' }
+    #swagger.responses[400] = { description: 'At least one field must be provided for update' }
     #swagger.responses[404] = { description: 'Log not found' }
     #swagger.responses[500] = { description: 'Failed to update log' }
   */
+  if (!req.body.notes && !req.body.date && !req.body.habitId) {
+    return res.status(400).json({ message: 'At least one field must be provided for update' });
+  }
   try {
     const updatedLog = await Log.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedLog) {
-      return res.status(404).json({ message: 'Log not found' });
-    }
-    res.json({ message: 'Log updated successfully', log: updatedLog });
+    if (!updatedLog) return res.status(404).json({ message: 'Log not found' });
+    // Send 204 No Content with empty body
+    res.status(204).send();
   } catch (error) {
     res.status(500).json({ message: 'Failed to update log', error: error.message });
   }
@@ -128,9 +133,7 @@ router.delete('/:id', async (req, res) => {
   */
   try {
     const deletedLog = await Log.findByIdAndDelete(req.params.id);
-    if (!deletedLog) {
-      return res.status(404).json({ message: 'Log not found' });
-    }
+    if (!deletedLog) return res.status(404).json({ message: 'Log not found' });
     res.json({ message: 'Log deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete log', error: error.message });

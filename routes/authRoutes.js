@@ -20,14 +20,20 @@ router.post('/register', async (req, res) => {
     #swagger.responses[400] = { description: 'User already exists' }
     */
     const { email, name, password } = req.body;
+    if (!email || !name || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required' });
+    }
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'User already exists' });
+        const newUser = new User({ name, email, password });
+        await newUser.save();
 
-    const newUser = new User({ name, email, password });
-    await newUser.save();
-
-    res.json({ message: 'User registered successfully' });
+        res.json({ message: 'User registered successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 });
 
 // Login user
@@ -47,13 +53,18 @@ router.post('/login', async (req, res) => {
     #swagger.responses[400] = { description: 'Invalid email or password' }
     */
     const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user || user.password !== password) {
-        return res.status(400).json({ message: 'Invalid email or password' });
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
     }
-
-    res.json({ message: 'Login successful', userId: user._id });
+    try {
+        const user = await User.findOne({ email });
+        if (!user || user.password !== password) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+        res.json({ message: 'Login successful', userId: user._id });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 });
 
 // Get all users
@@ -71,7 +82,7 @@ router.get('/all', async (req, res) => {
         const users = await User.find();
         res.json(users);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
@@ -89,12 +100,10 @@ router.get('/user/:id', async (req, res) => {
     */
     try {
         const user = await User.findById(req.params.id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
@@ -115,12 +124,10 @@ router.delete('/id/:id', async (req, res) => {
     */
     try {
         const deletedUser = await User.findByIdAndDelete(req.params.id);
-        if (!deletedUser) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        if (!deletedUser) return res.status(404).json({ message: 'User not found' });
         res.json({ message: 'User deleted successfully' });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
