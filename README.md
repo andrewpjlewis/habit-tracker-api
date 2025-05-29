@@ -1,6 +1,6 @@
 # 🌱 Habit Tracker API
 
-An API that allows users to track and log their daily habits. Built with Node.js, Express, MongoDB, and Google OAuth.
+An API that allows users to track and log their daily habits. Built with Node.js, Express, and MongoDB.
 
 ---
 
