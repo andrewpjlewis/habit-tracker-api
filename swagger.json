@@ -5,7 +5,7 @@
     "description": "API for user authentication and habit tracking",
     "version": "1.0.0"
   },
-  "host": "localhost:3000",
+  "host": "habit-tracker-api-eqos.onrender.com",
   "basePath": "/",
   "tags": [
     {
@@ -71,10 +71,10 @@
             "description": "User registered successfully"
           },
           "400": {
-            "description": "User already exists"
+            "description": "Validation error or user already exists"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Server error"
           }
         }
       }
@@ -111,10 +111,10 @@
             "description": "Login successful"
           },
           "400": {
-            "description": "Invalid email or password"
+            "description": "Validation error or invalid credentials"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Server error"
           }
         }
       }
@@ -150,22 +150,26 @@
         "tags": [
           "Auth"
         ],
-        "summary": "Get a user by an id",
+        "summary": "Get a user by ID",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "MongoDB ObjectId of the user"
           }
         ],
         "responses": {
           "200": {
-            "description": "User by id",
+            "description": "User found",
             "schema": {
               "$ref": "#/definitions/User"
             }
+          },
+          "400": {
+            "description": "Invalid user ID format"
           },
           "404": {
             "description": "User not found"
@@ -189,12 +193,15 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "User ID"
+            "description": "MongoDB ObjectId of the user"
           }
         ],
         "responses": {
           "200": {
             "description": "User deleted successfully"
+          },
+          "400": {
+            "description": "Invalid user ID format"
           },
           "404": {
             "description": "User not found"
@@ -423,7 +430,7 @@
             "description": "Log created successfully"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Validation error"
           },
           "500": {
             "description": "Failed to create log"
@@ -451,6 +458,9 @@
           "200": {
             "description": "List of logs for the habit"
           },
+          "400": {
+            "description": "Invalid habitId format"
+          },
           "500": {
             "description": "Failed to fetch logs"
           }
@@ -476,6 +486,9 @@
         "responses": {
           "200": {
             "description": "The requested log entry"
+          },
+          "400": {
+            "description": "Invalid ID format"
           },
           "404": {
             "description": "Log not found"
@@ -527,7 +540,7 @@
             "description": "Log updated successfully, no content returned"
           },
           "400": {
-            "description": "At least one field must be provided for update"
+            "description": "Validation error or no fields provided"
           },
           "404": {
             "description": "Log not found"
@@ -555,6 +568,9 @@
         "responses": {
           "200": {
             "description": "Log deleted successfully"
+          },
+          "400": {
+            "description": "Invalid ID format"
           },
           "404": {
             "description": "Log not found"

@@ -27,3 +27,38 @@ Content-Type: application/json
 
 ### Delete a habit by ID
 DELETE http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
+
+
+
+### PRODUCTION
+
+
+### Create a new habit
+POST https://habit-tracker-api-eqos.onrender.com/api/habits
+Content-Type: application/json
+
+{
+  "title": "Morning Jog",
+  "description": "Jog for 30 minutes",
+  "frequency": "daily",
+  "userId": "6842038aecd9d47a2a9ae467"
+}
+
+### Get all habits (optional: filter by userId)
+GET https://habit-tracker-api-eqos.onrender.com/api/habits/all
+
+### Get a single habit by ID
+GET https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a
+
+### Update a habit by ID
+PUT https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a
+Content-Type: application/json
+
+{
+  "title": "Dinner Time Walk",
+  "description": "Walk instead of jogging",
+  "frequency": "daily"
+}
+
+### Delete a habit by ID
+DELETE https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a

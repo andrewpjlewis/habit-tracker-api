@@ -5,7 +5,7 @@ const doc = {
     title: 'Habit Tracker API',
     description: 'API for user authentication and habit tracking'
   },
-  host: 'localhost:3000',
+  host: 'habit-tracker-api-eqos.onrender.com',
   schemes: ['http'],
   tags: [
     {

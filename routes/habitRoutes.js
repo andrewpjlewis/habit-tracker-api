@@ -11,11 +11,11 @@ router.post('/', async (req, res) => {
       in: 'body',
       required: true,
       schema: {
-          title: 'Drink water',
-          description: 'Drink 8 cups of water',
-          frequency: 'Daily',
-          userId: 'user123'
-      }
+              "title": "Morning Jog",
+              "description": "Jog for 30 minutes",
+              "frequency": "daily",
+              "userId": "6842038aecd9d47a2a9ae467"
+}
   }
   #swagger.responses[201] = { description: 'Habit created successfully' }
   #swagger.responses[500] = { description: 'Failed to create habit' }
