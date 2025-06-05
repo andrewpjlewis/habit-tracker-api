@@ -6,24 +6,24 @@ Content-Type: application/json
   "title": "Morning Jog",
   "description": "Jog for 30 minutes",
   "frequency": "daily",
-  "userId": "682f7e0dd999aeb10e86f7c6"
+  "userId": "6842038aecd9d47a2a9ae467"
 }
 
 ### Get all habits (optional: filter by userId)
 GET http://localhost:3000/api/habits/all
 
 ### Get a single habit by ID
-GET http://localhost:3000/api/habits/682f879362a3314a7715edeb
+GET http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
 
 ### Update a habit by ID
-PUT http://localhost:3000/api/habits/682f88b5d334c0a77c81c733
+PUT http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
 Content-Type: application/json
 
 {
-  "title": "Dinner TIme Walk",
+  "title": "Dinner Time Walk",
   "description": "Walk instead of jogging",
   "frequency": "daily"
 }
 
 ### Delete a habit by ID
-DELETE http://localhost:3000/api/habits/682f886c61fd89f46a9c06b0
+DELETE http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a

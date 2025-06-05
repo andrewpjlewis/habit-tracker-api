@@ -30,6 +30,7 @@ const habitSchema = new mongoose.Schema({
     type: Date
   }
 }, {
+  // Adds two more fields, making the total 8 per the requirements
   timestamps: true
 });
 

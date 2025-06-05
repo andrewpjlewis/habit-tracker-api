@@ -1,6 +1,21 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const router = express.Router();
+
+// Joi schemas
+const registerSchema = Joi.object({
+    name: Joi.string().min(2).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+});
+
+const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required()
+});
 
 // Register user
 router.post('/register', async (req, res) => {
@@ -17,17 +32,20 @@ router.post('/register', async (req, res) => {
         }
     }
     #swagger.responses[200] = { description: 'User registered successfully' }
-    #swagger.responses[400] = { description: 'User already exists' }
+    #swagger.responses[400] = { description: 'Validation error or user already exists' }
+    #swagger.responses[500] = { description: 'Server error' }
     */
+    const { error } = registerSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
     const { email, name, password } = req.body;
-    if (!email || !name || !password) {
-        return res.status(400).json({ message: 'Name, email, and password are required' });
-    }
+
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-        const newUser = new User({ name, email, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email, password: hashedPassword });
         await newUser.save();
 
         res.json({ message: 'User registered successfully' });
@@ -50,17 +68,20 @@ router.post('/login', async (req, res) => {
         }
     }
     #swagger.responses[200] = { description: 'Login successful' }
-    #swagger.responses[400] = { description: 'Invalid email or password' }
+    #swagger.responses[400] = { description: 'Validation error or invalid credentials' }
+    #swagger.responses[500] = { description: 'Server error' }
     */
+    const { error } = loginSchema.validate(req.body);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
     const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
-    }
     try {
         const user = await User.findOne({ email });
-        if (!user || user.password !== password) {
-            return res.status(400).json({ message: 'Invalid email or password' });
-        }
+        if (!user) return res.status(400).json({ message: 'Invalid email or password' });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
+
         res.json({ message: 'Login successful', userId: user._id });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
@@ -90,16 +111,27 @@ router.get('/all', async (req, res) => {
 router.get('/user/:id', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
-    #swagger.summary = 'Get a user by an id'
+    #swagger.summary = 'Get a user by ID'
+    #swagger.parameters['id'] = {
+        in: 'path',
+        required: true,
+        type: 'string',
+        description: 'MongoDB ObjectId of the user'
+    }
     #swagger.responses[200] = {
-        description: 'User by id',
+        description: 'User found',
         schema: { $ref: "#/definitions/User" }
     }
+    #swagger.responses[400] = { description: 'Invalid user ID format' }
     #swagger.responses[404] = { description: 'User not found' }
     #swagger.responses[500] = { description: 'Server error' }
     */
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(id);
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (err) {
@@ -107,23 +139,28 @@ router.get('/user/:id', async (req, res) => {
     }
 });
 
-// Delete a user by _id
+// Delete a user by ID
 router.delete('/id/:id', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Delete a user by ID'
     #swagger.parameters['id'] = {
         in: 'path',
-        description: 'User ID',
         required: true,
-        type: 'string'
+        type: 'string',
+        description: 'MongoDB ObjectId of the user'
     }
     #swagger.responses[200] = { description: 'User deleted successfully' }
+    #swagger.responses[400] = { description: 'Invalid user ID format' }
     #swagger.responses[404] = { description: 'User not found' }
     #swagger.responses[500] = { description: 'Server error' }
     */
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
     try {
-        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        const deletedUser = await User.findByIdAndDelete(id);
         if (!deletedUser) return res.status(404).json({ message: 'User not found' });
         res.json({ message: 'User deleted successfully' });
     } catch (err) {
