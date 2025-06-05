@@ -22,7 +22,7 @@
     }
   ],
   "schemes": [
-    "http"
+    "https"
   ],
   "paths": {
     "/": {
@@ -229,19 +229,19 @@
               "properties": {
                 "title": {
                   "type": "string",
-                  "example": "Drink water"
+                  "example": "Morning Jog"
                 },
                 "description": {
                   "type": "string",
-                  "example": "Drink 8 cups of water"
+                  "example": "Jog for 30 minutes"
                 },
                 "frequency": {
                   "type": "string",
-                  "example": "Daily"
+                  "example": "daily"
                 },
                 "userId": {
                   "type": "string",
-                  "example": "user123"
+                  "example": "6842038aecd9d47a2a9ae467"
                 }
               }
             }
