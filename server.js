@@ -3,20 +3,31 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
+const passport = require('passport');
+const session = require('express-session');
 
 // Load environment variables from .env file
 dotenv.config();
+require('./passport-setup');
 
 // Initialize express app
 const app = express();
 
 // Load Swagger JSON documentation
-const swaggerDocument = require('./swagger.json'); // Make sure this file exists and is valid JSON
+const swaggerDocument = require('./swagger.json');
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(session({
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // MongoDB Connection without deprecated options
 mongoose

@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -141,6 +142,27 @@ router.get('/user/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+
+// Route to initiate Google OAuth login
+router.get('/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// Callback route Google redirects to after login
+router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful login, generate JWT or session
+    const token = jwt.sign(
+      { _id: req.user._id, email: req.user.email },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Redirect or respond with token as needed
+    res.redirect(`http://your-frontend-url.com/oauth-success?token=${token}`);
+  }
+);
 
 // Delete user by ID
 router.delete('/user/:id', async (req, res) => {

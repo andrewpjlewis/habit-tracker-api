@@ -21,11 +21,17 @@ Content-Type: application/json
 GET http://localhost:3000/api/auth/all
 
 ### Get a user by ID
-GET http://localhost:3000/api/auth/user/684b49e391442f3d7b7221d5
+GET http://localhost:3000/api/auth/user/684b50610ab44d6181d6b370
 
 ### Delete a user by ID
-DELETE http://localhost:3000/api/auth/user/684b49e391442f3d7b7221d5
+DELETE http://localhost:3000/api/auth/user/684b50610ab44d6181d6b370
 
+
+### Google OAuth - initiate login (opens a browser in real life)
+GET http://localhost:3000/api/auth/google
+
+### Google OAuth - callback (simulate the redirect after user grants permission)
+GET http://localhost:3000/api/auth/google/callback?code=YOUR_AUTH_CODE_HERE
 
 
 ### PRODUCTION
@@ -58,3 +64,9 @@ GET https://habit-tracker-api-eqos.onrender.com/api/auth/user/68420378ecd9d47a2a
 
 ### Delete a user by ID
 DELETE https://habit-tracker-api-eqos.onrender.com/api/auth/user/68420378ecd9d47a2a9ae460
+
+### Google OAuth - initiate login (opens a browser in real life)
+GET https://habit-tracker-api-eqos.onrender.com/api/auth/google
+
+### Google OAuth - callback (simulate the redirect after user grants permission)
+GET https://habit-tracker-api-eqos.onrender.com/api/auth/google/callback?code=YOUR_AUTH_CODE_HERE
