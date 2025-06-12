@@ -1,9 +1,14 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const Joi = require('joi');
 const mongoose = require('mongoose');
 const User = require('../models/User');
+
 const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const SALT_ROUNDS = 10;
 
 // Joi schemas
 const registerSchema = Joi.object({
@@ -17,7 +22,7 @@ const loginSchema = Joi.object({
     password: Joi.string().min(6).required()
 });
 
-// Register user
+// Register
 router.post('/register', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
@@ -31,30 +36,27 @@ router.post('/register', async (req, res) => {
             password: 'password123'
         }
     }
-    #swagger.responses[200] = { description: 'User registered successfully' }
+    #swagger.responses[201] = { description: 'User registered successfully' }
     #swagger.responses[400] = { description: 'Validation error or user already exists' }
-    #swagger.responses[500] = { description: 'Server error' }
     */
     const { error } = registerSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { email, name, password } = req.body;
-
+    const { name, email, password } = req.body;
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, email, password: hashedPassword });
+        const newUser = new User({ name, email, password });
         await newUser.save();
 
-        res.json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
-// Login user
+// Login
 router.post('/login', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
@@ -67,24 +69,31 @@ router.post('/login', async (req, res) => {
             password: 'password123'
         }
     }
-    #swagger.responses[200] = { description: 'Login successful' }
+    #swagger.responses[200] = { description: 'Login successful with JWT' }
     #swagger.responses[400] = { description: 'Validation error or invalid credentials' }
-    #swagger.responses[500] = { description: 'Server error' }
     */
     const { error } = loginSchema.validate(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const { email, password } = req.body;
     try {
+        const { email, password } = req.body;
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: 'Invalid email or password' });
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
 
-        res.json({ message: 'Login successful', userId: user._id });
-    } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        const token = jwt.sign({ _id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+
+        res.json({
+            message: 'Login successful',
+            token,
+            userId: user._id,
+            name: user.name,
+            email: user.email
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
 
@@ -94,10 +103,9 @@ router.get('/all', async (req, res) => {
     #swagger.tags = ['Auth']
     #swagger.summary = 'Get all users'
     #swagger.responses[200] = {
-        description: 'List of users',
+        description: 'List of all users',
         schema: [{ $ref: "#/definitions/User" }]
     }
-    #swagger.responses[500] = { description: 'Server error' }
     */
     try {
         const users = await User.find();
@@ -107,7 +115,7 @@ router.get('/all', async (req, res) => {
     }
 });
 
-// Get a user by id
+// Get user by ID
 router.get('/user/:id', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
@@ -115,21 +123,16 @@ router.get('/user/:id', async (req, res) => {
     #swagger.parameters['id'] = {
         in: 'path',
         required: true,
-        type: 'string',
-        description: 'MongoDB ObjectId of the user'
+        type: 'string'
     }
-    #swagger.responses[200] = {
-        description: 'User found',
-        schema: { $ref: "#/definitions/User" }
-    }
-    #swagger.responses[400] = { description: 'Invalid user ID format' }
+    #swagger.responses[200] = { description: 'User found' }
     #swagger.responses[404] = { description: 'User not found' }
-    #swagger.responses[500] = { description: 'Server error' }
     */
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'Invalid user ID' });
     }
+
     try {
         const user = await User.findById(id);
         if (!user) return res.status(404).json({ message: 'User not found' });
@@ -139,26 +142,23 @@ router.get('/user/:id', async (req, res) => {
     }
 });
 
-// Delete a user by ID
-router.delete('/id/:id', async (req, res) => {
+// Delete user by ID
+router.delete('/user/:id', async (req, res) => {
     /*
     #swagger.tags = ['Auth']
     #swagger.summary = 'Delete a user by ID'
     #swagger.parameters['id'] = {
         in: 'path',
         required: true,
-        type: 'string',
-        description: 'MongoDB ObjectId of the user'
+        type: 'string'
     }
     #swagger.responses[200] = { description: 'User deleted successfully' }
-    #swagger.responses[400] = { description: 'Invalid user ID format' }
-    #swagger.responses[404] = { description: 'User not found' }
-    #swagger.responses[500] = { description: 'Server error' }
     */
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ message: 'Invalid user ID' });
     }
+
     try {
         const deletedUser = await User.findByIdAndDelete(id);
         if (!deletedUser) return res.status(404).json({ message: 'User not found' });
@@ -167,5 +167,6 @@ router.delete('/id/:id', async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 });
+
 
 module.exports = router;

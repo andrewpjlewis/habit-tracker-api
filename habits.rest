@@ -1,64 +1,57 @@
-### Create a new habit
+### Create a new habit (Protected)
 POST http://localhost:3000/api/habits
 Content-Type: application/json
+Authorization: Bearer <your_token_here>
 
 {
-  "title": "Morning Jog",
-  "description": "Jog for 30 minutes",
-  "frequency": "daily",
-  "userId": "6842038aecd9d47a2a9ae467"
+  "name": "Morning Jog",
+  "plantType": "Tree",
+  "frequency": 3
 }
 
-### Get all habits (optional: filter by userId)
-GET http://localhost:3000/api/habits/all
+### Get all habits for the logged-in user
+GET http://localhost:3000/api/habits
+Authorization: Bearer <your_token_here>
 
-### Get a single habit by ID
+### Get a single habit by ID (for the logged-in user)
 GET http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
+Authorization: Bearer <your_token_here>
 
-### Update a habit by ID
-PUT http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
-Content-Type: application/json
-
-{
-  "title": "Dinner Time Walk",
-  "description": "Walk instead of jogging",
-  "frequency": "daily"
-}
+### Mark a habit as complete
+PATCH http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a/complete
+Authorization: Bearer <your_token_here>
 
 ### Delete a habit by ID
 DELETE http://localhost:3000/api/habits/6842039cecd9d47a2a9ae46a
+Authorization: Bearer <your_token_here>
 
 
 
 ### PRODUCTION
 
-
-### Create a new habit
+### Create a new habit (Protected)
 POST https://habit-tracker-api-eqos.onrender.com/api/habits
 Content-Type: application/json
+Authorization: Bearer <your_token_here>
 
 {
-  "title": "Morning Jog",
-  "description": "Jog for 30 minutes",
-  "frequency": "daily",
-  "userId": "6842038aecd9d47a2a9ae467"
+  "name": "Morning Jog",
+  "plantType": "Tree",
+  "frequency": 3
 }
 
-### Get all habits (optional: filter by userId)
-GET https://habit-tracker-api-eqos.onrender.com/api/habits/all
+### Get all habits for the logged-in user
+GET https://habit-tracker-api-eqos.onrender.com/api/habits
+Authorization: Bearer <your_token_here>
 
 ### Get a single habit by ID
 GET https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a
+Authorization: Bearer <your_token_here>
 
-### Update a habit by ID
-PUT https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a
-Content-Type: application/json
-
-{
-  "title": "Dinner Time Walk",
-  "description": "Walk instead of jogging",
-  "frequency": "daily"
-}
+### Mark a habit as complete
+PATCH https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a/complete
+Authorization: Bearer <your_token_here>
 
 ### Delete a habit by ID
 DELETE https://habit-tracker-api-eqos.onrender.com/api/habits/6842039cecd9d47a2a9ae46a
+Authorization: Bearer <your_token_here>

@@ -1,112 +1,120 @@
 const express = require('express');
 const Habit = require('../models/Habit');
+const verifyToken = require('../middleware/verifyToken');
 const router = express.Router();
 
-// Create a new habit
-router.post('/', async (req, res) => {
+// 🔐 Create a new habit (authenticated)
+router.post('/', verifyToken, async (req, res, next) => {
   /*
   #swagger.tags = ['Habits']
   #swagger.summary = 'Create a new habit'
+  #swagger.security = [{ "bearerAuth": [] }]
   #swagger.parameters['body'] = {
-      in: 'body',
-      required: true,
-      schema: {
-              "title": "Morning Jog",
-              "description": "Jog for 30 minutes",
-              "frequency": "daily",
-              "userId": "6842038aecd9d47a2a9ae467"
-}
+    in: 'body',
+    required: true,
+    schema: {
+      name: 'Morning Jog',
+      plantType: 'Rose',
+      frequency: 3
+    }
   }
   #swagger.responses[201] = { description: 'Habit created successfully' }
-  #swagger.responses[500] = { description: 'Failed to create habit' }
+  #swagger.responses[400] = { description: 'Missing or invalid fields' }
   */
-  const { title, description, frequency, userId } = req.body;
-  if (!title || !frequency || !userId) {
-    return res.status(400).json({ message: 'Title, frequency, and userId are required' });
-  }
   try {
-    const newHabit = new Habit({ title, description, frequency, userId });
+    const { name, plantType, frequency } = req.body;
+    const userId = req.user._id;
+
+    const parsedFrequency = parseInt(frequency, 10);
+    if (!name || !plantType || isNaN(parsedFrequency)) {
+      return res.status(400).json({ message: 'Missing or invalid required fields' });
+    }
+
+    const newHabit = new Habit({ name, plantType, frequency: parsedFrequency, userId });
     await newHabit.save();
-    res.status(201).json({ message: 'Habit created successfully', habit: newHabit });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to create habit', error: error.message });
+    res.status(201).json(newHabit);
+  } catch (err) {
+    next(err);
   }
 });
 
-// Get all habits (optionally filtered by userId)
-router.get('/all', async (req, res) => {
+// ✅ Get all habits for the authenticated user
+router.get('/', verifyToken, async (req, res, next) => {
   /*
-    #swagger.tags = ['Habits']
-    #swagger.summary = 'Get all habits (optionally filtered by userId)'
-    #swagger.parameters['userId'] = {
-      in: 'query',
-      required: false,
-      type: 'string',
-      description: 'Filter habits by user ID'
-    }
-    #swagger.responses[200] = { description: 'List of habits' }
-    #swagger.responses[500] = { description: 'Failed to fetch habits' }
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Get all habits for the logged-in user'
+  #swagger.security = [{ "bearerAuth": [] }]
+  #swagger.responses[200] = { description: 'List of user habits' }
   */
   try {
-    const filter = {};
-    if (req.query.userId) {
-      filter.userId = req.query.userId;
-    }
-    const habits = await Habit.find(filter);
+    const habits = await Habit.find({ userId: req.user._id }).lean();
     res.json(habits);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch habits', error: error.message });
+  } catch (err) {
+    next(err);
   }
 });
 
-// Get a single habit by ID
-router.get('/:id', async (req, res) => {
+// ✅ Get a single habit by ID (user must own it)
+router.get('/:id', verifyToken, async (req, res, next) => {
   /*
-    #swagger.tags = ['Habits']
-    #swagger.summary = 'Get a single habit by ID'
-    #swagger.parameters['id'] = {
-      in: 'path',
-      required: true,
-      type: 'string',
-      description: 'Habit ID'
-    }
-    #swagger.responses[200] = { description: 'A habit object' }
-    #swagger.responses[404] = { description: 'Habit not found' }
-    #swagger.responses[500] = { description: 'Failed to fetch habit' }
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Get a single habit by ID (authenticated)'
+  #swagger.security = [{ "bearerAuth": [] }]
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Habit found' }
+  #swagger.responses[404] = { description: 'Habit not found' }
+  */
+  try {
+    const habit = await Habit.findOne({ _id: req.params.id, userId: req.user._id }).lean();
+    if (!habit) return res.status(404).json({ message: 'Habit not found' });
+    res.json(habit);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ✅ Increment habit progress
+router.patch('/:id/complete', async (req, res, next) => {
+  /*
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Mark a habit as complete (increment progress)'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Habit updated' }
+  #swagger.responses[404] = { description: 'Habit not found' }
   */
   try {
     const habit = await Habit.findById(req.params.id);
     if (!habit) return res.status(404).json({ message: 'Habit not found' });
+
+    habit.progress += 1;
+    await habit.save();
+
     res.json(habit);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch habit', error: error.message });
+  } catch (err) {
+    next(err);
   }
 });
 
-// Update a habit by ID
+// ✅ Update a habit
 router.put('/:id', async (req, res) => {
   /*
-    #swagger.tags = ['Habits']
-    #swagger.summary = 'Update a habit by ID'
-    #swagger.parameters['id'] = {
-      in: 'path',
-      required: true,
-      type: 'string',
-      description: 'Habit ID'
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Update a habit by ID'
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.parameters['body'] = {
+    in: 'body',
+    required: true,
+    schema: {
+      title: 'Updated Habit',
+      description: 'Updated description',
+      frequency: 4,
+      startDate: '2025-06-01',
+      endDate: '2025-07-01'
     }
-    #swagger.parameters['body'] = {
-      in: 'body',
-      required: true,
-      schema: {
-        title: 'Updated Title',
-        description: 'Updated description',
-        frequency: 'weekly'
-      }
-    }
-    #swagger.responses[204] = { description: 'Habit updated successfully with no content returned' }
-    #swagger.responses[404] = { description: 'Habit not found' }
-    #swagger.responses[400] = { description: 'No fields provided for update' }
-    #swagger.responses[500] = { description: 'Failed to update habit' }
+  }
+  #swagger.responses[204] = { description: 'Habit updated successfully' }
+  #swagger.responses[404] = { description: 'Habit not found' }
+  #swagger.responses[400] = { description: 'No fields provided' }
   */
   if (!req.body.title && !req.body.description && !req.body.frequency && !req.body.startDate && !req.body.endDate) {
     return res.status(400).json({ message: 'At least one field must be provided for update' });
@@ -115,34 +123,52 @@ router.put('/:id', async (req, res) => {
     const updatedHabit = await Habit.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!updatedHabit) return res.status(404).json({ message: 'Habit not found' });
 
-    // Send 204 No Content status with no response body
-    res.status(204).send();
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to update habit', error: error.message });
+    res.status(204).send(); // No content
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update habit', error: err.message });
   }
 });
 
-// Delete a habit by ID
-router.delete('/:id', async (req, res) => {
+// ✅ Delete a habit by ID (authenticated and owned by user)
+router.delete('/:id', verifyToken, async (req, res, next) => {
   /*
-    #swagger.tags = ['Habits']
-    #swagger.summary = 'Delete a habit by ID'
-    #swagger.parameters['id'] = {
-      in: 'path',
-      required: true,
-      type: 'string',
-      description: 'Habit ID'
-    }
-    #swagger.responses[200] = { description: 'Habit deleted successfully' }
-    #swagger.responses[404] = { description: 'Habit not found' }
-    #swagger.responses[500] = { description: 'Failed to delete habit' }
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Delete a habit by ID'
+  #swagger.security = [{ "bearerAuth": [] }]
+  #swagger.parameters['id'] = { in: 'path', required: true, type: 'string' }
+  #swagger.responses[200] = { description: 'Habit deleted successfully' }
+  #swagger.responses[404] = { description: 'Habit not found' }
   */
   try {
-    const deletedHabit = await Habit.findByIdAndDelete(req.params.id);
+    const deletedHabit = await Habit.findOneAndDelete({ _id: req.params.id, userId: req.user._id });
     if (!deletedHabit) return res.status(404).json({ message: 'Habit not found' });
+
     res.json({ message: 'Habit deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to delete habit', error: error.message });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// 🔓 Public: Get all habits (optional filter by userId)
+router.get('/all', async (req, res) => {
+  /*
+  #swagger.tags = ['Habits']
+  #swagger.summary = 'Get all habits (optionally filtered by userId)'
+  #swagger.parameters['userId'] = {
+    in: 'query',
+    type: 'string',
+    description: 'Filter habits by userId'
+  }
+  #swagger.responses[200] = { description: 'List of habits' }
+  */
+  try {
+    const filter = {};
+    if (req.query.userId) filter.userId = req.query.userId;
+
+    const habits = await Habit.find(filter);
+    res.json(habits);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch habits', error: err.message });
   }
 });
 
