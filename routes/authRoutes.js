@@ -145,24 +145,34 @@ router.get('/user/:id', async (req, res) => {
 
 // Route to initiate Google OAuth login
 router.get('/google',
+  /*
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Initiate Google OAuth login'
+  #swagger.description = 'Redirect user to Google for OAuth authentication'
+  #swagger.responses[302] = { description: 'Redirect to Google OAuth login page' }
+  */
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 // Callback route Google redirects to after login
 router.get('/google/callback',
+  /*
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Google OAuth callback endpoint'
+  #swagger.description = 'Handles Google OAuth callback and generates JWT token'
+  #swagger.responses[302] = { description: 'Redirect to frontend with JWT token on success or to /login on failure' }
+  */
   passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    // Successful login, generate JWT or session
     const token = jwt.sign(
       { _id: req.user._id, email: req.user.email },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-
-    // Redirect or respond with token as needed
     res.redirect(`http://your-frontend-url.com/oauth-success?token=${token}`);
   }
 );
+
 
 // Delete user by ID
 router.delete('/user/:id', async (req, res) => {

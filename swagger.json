@@ -67,14 +67,14 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "User registered successfully"
           },
           "400": {
             "description": "Validation error or user already exists"
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal Server Error"
           }
         }
       }
@@ -108,13 +108,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Login successful"
+            "description": "Login successful with JWT"
           },
           "400": {
             "description": "Validation error or invalid credentials"
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal Server Error"
           }
         }
       }
@@ -128,7 +128,7 @@
         "description": "",
         "responses": {
           "200": {
-            "description": "List of users",
+            "description": "List of all users",
             "schema": {
               "type": "array",
               "items": {
@@ -140,7 +140,7 @@
             }
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal Server Error"
           }
         }
       }
@@ -157,30 +157,24 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "MongoDB ObjectId of the user"
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
-            "description": "User found",
-            "schema": {
-              "$ref": "#/definitions/User"
-            }
+            "description": "User found"
           },
           "400": {
-            "description": "Invalid user ID format"
+            "description": "Bad Request"
           },
           "404": {
             "description": "User not found"
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal Server Error"
           }
         }
-      }
-    },
-    "/api/auth/id/{id}": {
+      },
       "delete": {
         "tags": [
           "Auth"
@@ -192,8 +186,7 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "MongoDB ObjectId of the user"
+            "type": "string"
           }
         ],
         "responses": {
@@ -201,13 +194,41 @@
             "description": "User deleted successfully"
           },
           "400": {
-            "description": "Invalid user ID format"
+            "description": "Bad Request"
           },
           "404": {
-            "description": "User not found"
+            "description": "Not Found"
           },
           "500": {
-            "description": "Server error"
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/api/auth/google": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Initiate Google OAuth login",
+        "description": "Redirect user to Google for OAuth authentication",
+        "responses": {
+          "302": {
+            "description": "Redirect to Google OAuth login page"
+          }
+        }
+      }
+    },
+    "/api/auth/google/callback": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Google OAuth callback endpoint",
+        "description": "Handles Google OAuth callback and generates JWT token",
+        "responses": {
+          "302": {
+            "description": "Redirect to frontend with JWT token on success or to /login on failure"
           }
         }
       }
@@ -221,27 +242,28 @@
         "description": "",
         "parameters": [
           {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          },
+          {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "title": {
+                "name": {
                   "type": "string",
                   "example": "Morning Jog"
                 },
-                "description": {
+                "plantType": {
                   "type": "string",
-                  "example": "Jog for 30 minutes"
+                  "example": "Rose"
                 },
                 "frequency": {
-                  "type": "string",
-                  "example": "daily"
-                },
-                "userId": {
-                  "type": "string",
-                  "example": "6842038aecd9d47a2a9ae467"
+                  "type": "number",
+                  "example": 3
                 }
               }
             }
@@ -252,10 +274,200 @@
             "description": "Habit created successfully"
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Missing or invalid fields"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Get all habits for the logged-in user",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user habits"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/habits/{id}": {
+      "get": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Get a single habit by ID (authenticated)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Habit found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Habit not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Update a habit by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Updated Habit"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "Updated description"
+                },
+                "frequency": {
+                  "type": "number",
+                  "example": 4
+                },
+                "startDate": {
+                  "type": "string",
+                  "example": "2025-06-01"
+                },
+                "endDate": {
+                  "type": "string",
+                  "example": "2025-07-01"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Habit updated successfully"
+          },
+          "400": {
+            "description": "No fields provided"
+          },
+          "404": {
+            "description": "Habit not found"
           },
           "500": {
-            "description": "Failed to create habit"
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Delete a habit by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Habit deleted successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Habit not found"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/habits/{id}/complete": {
+      "patch": {
+        "tags": [
+          "Habits"
+        ],
+        "summary": "Mark a habit as complete (increment progress)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Habit updated"
+          },
+          "404": {
+            "description": "Habit not found"
           }
         }
       }
@@ -271,9 +483,8 @@
           {
             "name": "userId",
             "in": "query",
-            "required": false,
             "type": "string",
-            "description": "Filter habits by user ID"
+            "description": "Filter habits by userId"
           }
         ],
         "responses": {
@@ -281,115 +492,7 @@
             "description": "List of habits"
           },
           "500": {
-            "description": "Failed to fetch habits"
-          }
-        }
-      }
-    },
-    "/api/habits/{id}": {
-      "get": {
-        "tags": [
-          "Habits"
-        ],
-        "summary": "Get a single habit by ID",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Habit ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "A habit object"
-          },
-          "404": {
-            "description": "Habit not found"
-          },
-          "500": {
-            "description": "Failed to fetch habit"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Habits"
-        ],
-        "summary": "Update a habit by ID",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Habit ID"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string",
-                  "example": "Updated Title"
-                },
-                "description": {
-                  "type": "string",
-                  "example": "Updated description"
-                },
-                "frequency": {
-                  "type": "string",
-                  "example": "weekly"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Habit updated successfully with no content returned"
-          },
-          "400": {
-            "description": "No fields provided for update"
-          },
-          "404": {
-            "description": "Habit not found"
-          },
-          "500": {
-            "description": "Failed to update habit"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Habits"
-        ],
-        "summary": "Delete a habit by ID",
-        "description": "",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "Habit ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Habit deleted successfully"
-          },
-          "404": {
-            "description": "Habit not found"
-          },
-          "500": {
-            "description": "Failed to delete habit"
+            "description": "Internal Server Error"
           }
         }
       }
