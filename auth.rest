@@ -17,6 +17,9 @@ Content-Type: application/json
   "password": "123456"
 }
 
+### Log in an existing user
+POST http://localhost:3000/api/auth/logout
+
 ### Get all users
 GET http://localhost:3000/api/auth/all
 

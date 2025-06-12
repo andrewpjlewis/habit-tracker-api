@@ -98,6 +98,17 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Logout (stateless JWT, just client deletes token)
+router.post('/logout', (req, res) => {
+  /*
+  #swagger.tags = ['Auth']
+  #swagger.summary = 'Logout user'
+  #swagger.responses[200] = { description: 'Logout successful' }
+  */
+  // Since JWT is stateless, just respond success and client removes token
+  res.json({ message: 'Logout successful' });
+});
+
 // Get all users
 router.get('/all', async (req, res) => {
     /*
