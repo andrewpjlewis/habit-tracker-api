@@ -169,7 +169,7 @@ router.get('/google/callback',
       JWT_SECRET,
       { expiresIn: '7d' }
     );
-    res.redirect(`http://your-frontend-url.com/oauth-success?token=${token}`);
+    res.redirect(`https://habit-tracker-api-eqos.onrender.com/oauth-success?token=${token}`);
   }
 );
 
